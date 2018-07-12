@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>五子棋</title>
+        <style>
+            .board{
+                width:640px;
+                float: left;
+            }
+            html,body{height:100%}
+        </style>
+        <script type="text/javascript">
+                var canvas;
+                var context;
+                var whiteNum=0;
+                var blackNum=0;
+                var isWhite = false;//设置是否该轮到白棋
+                var isSuccess = false;//判断是否胜利
+                var newWhite = new Image();
+                newWhite.src = "images/white.png";//白棋图片
+                var newBlack = new Image();
+                newBlack.src = "images/black.png";//黑棋图片
+                var chessData = new Array(15);//初始化0为没有走过的，1为白棋走的，2为黑棋走的
+                for (var x = 0; x < 15; x++) {
+                    chessData[x] = new Array(15);
+                    for (var y = 0; y < 15; y++) {
+                        chessData[x][y] = 0;
+                    }
+                }
+                function drawRect() {//初始化棋盘
+                    canvas = document.getElementById("canvas");
+                    context = canvas.getContext("2d");
+                    for (var i = 40; i <= 600; i += 40) {
+                        context.beginPath();
+                        context.moveTo(40, i);
+                        context.lineTo(600, i);
+                        context.closePath();
+                        context.strokeStyle = "blue";
+                        context.stroke();
+                        context.beginPath();
+                        context.moveTo(i, 40);
+                        context.lineTo(i, 600);
+                        context.closePath();
+                        context.strokeStyle = "blue";
+                        context.stroke();
+                    }
+                }
+                function play(event){
+                    var x=Math.round((event.clientX)/40)-1;//鼠标点击位置转换数组坐标
+                    var y=Math.round((event.clientY)/40)-1;
+                    console.log([x+1,y+1,event.clientX,event.clientY]);
+                    if(chessData[x][y]!=0){
+                        alert("此位置有棋子了");
+                        return;
+                    }
+                    if(isWhite){
+                        isWhite=false;
+                        drawChess(1,x,y);
+                    }
+                    else{
+                        isWhite=true;
+                        drawChess(2,x,y);
+                    }
+                }
+                function drawChess(color,x,y){
+                    if (isSuccess == true) {
+                        alert("游戏已经结束");
+                        return;
+                    }
+                    if (x >= 0 && x < 15 && y >= 0 && y < 15){
+                        if (color == 1) {
+                            context.drawImage(newWhite, x * 40 + 20, y * 40 + 20);//绘制白棋
+                            chessData[x][y] = 1;
+                            whiteNum++;
+                            document.getElementById('white').innerHTML=whiteNum;//修改棋子数目
+                        }
+                        else {
+                            context.drawImage(newBlack, x * 40 + 20, y * 40 + 20);
+                            chessData[x][y] = 2;
+                            blackNum++;
+                            document.getElementById('black').innerHTML=blackNum;
+                        }
+                    }
+                    judge(x, y, color);
+                }
+                function judge(x,y,color){
+                    var left_right=0;
+                    var up_down=0;
+                    var upperleft_lowerright=0;
+                    var lowerleft_upperright=0;
+                    var tempX;
+                    var tempY;
+                //横线方向判断
+                    //落点左边
+                    tempX=x;
+                    tempY=y;
+                    while(tempX>=0&&chessData[tempX][tempY]==color){
+                        left_right++;
+                        tempX--;
+                    }
+                    //落点右边
+                    tempX=x+1;
+                    tempY=y;
+                    while(tempX<15&&chessData[tempX][tempY]==color){
+                        left_right++;
+                        tempX++;
+                    }
+                //直线方向
+                    //落点上边
+                    tempX=x;
+                    tempY=y;
+                    while(tempY>=0&&chessData[tempX][tempY]==color){
+                        up_down++;
+                        tempY--;
+                    }
+                    //落点下边
+                    tempX=x;
+                    tempY=y+1;
+                    while(tempX<15&&chessData[tempX][tempY]==color){
+                        up_down++;
+                        tempY++;
+                    }
+                //主对角线方向
+                    //落点左上方
+                    tempX=x;
+                    tempY=y;
+                    while(tempX>=0&&tempY>=0&&chessData[tempX][tempY]==color){
+                        upperleft_lowerright++;
+                        tempX--;
+                        tempY--;
+                    }
+                    //落点右下方
+                    tempX=x+1;
+                    tempY=y+1;
+                    while(tempX<15&&tempY<15&&chessData[tempX][tempY]==color){
+                        upperleft_lowerright++;
+                        tempX++;
+                        tempY++;
+                    }
+                //副对角线方向
+                    //落点左上方
+                    tempX=x;
+                    tempY=y;
+                    while(tempX>=0&&tempY<15&&chessData[tempX][tempY]==color){
+                        lowerleft_upperright++;
+                        tempX--;
+                        tempY++;
+                    }
+                    //落点右下方
+                    tempX=x+1;
+                    tempY=y-1;
+                    while(tempX<15&&tempY>=0&&chessData[tempX][tempY]==color){
+                        lowerleft_upperright++;
+                        tempX++;
+                        tempY--;
+                    }
+                    if(left_right>=5||up_down>=5||upperleft_lowerright>=5||lowerleft_upperright>=5){
+                        if(color==1){
+                            alert("白棋赢了");
+                        }
+                        else {
+                            alert("黑棋赢了");
+                        }
+                        isSuccess = true;
+                    }
+                }
+            </script>
+    </head>
+    <body onload="drawRect()">
+        <div class="board">
+            <canvas width="640" id="canvas" onmousedown="play(event)" height="640">你的浏览器不支持HTML5 canvas</canvas>
+        </div>
+        <div style="height:100%">
+            <div style="height:30%"></div>
+            <div>
+                <h1>五子棋</h1><br>
+                黑色：<nobr id="black">0</nobr>个棋子<br>
+                白色：<nobr id="white">0</nobr>个棋子<br>
+                <input type="button" onclick="javascript:window.location.reload() " value="重新开始"/>
+            </div>
+
+        </div>
+    </body>
